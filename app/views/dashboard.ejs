@@ -7,83 +7,111 @@
   <%- include('partials/navbar') %>
 
   <div class="container-fluid py-4 px-3 px-md-4">
-    <h3 class="mb-4"><i class="fa-solid fa-gauge-high"></i> Tableau de bord</h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <div>
+        <h3 class="mb-1"><i class="fa-solid fa-seedling text-primary"></i> Bonjour !</h3>
+        <p class="text-muted mb-0">Voici l'état de votre boutique aujourd'hui.</p>
+      </div>
+      <a href="/ventes/nouvelle" class="btn btn-primary btn-lg rounded-pill">
+        <i class="fa-solid fa-cart-shopping"></i> Nouvelle vente
+      </a>
+    </div>
 
-    <!-- Cartes indicateurs -->
+    <!-- Indicateurs clés -->
     <div class="row g-3 mb-4">
-      <div class="col-12 col-md-4">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-body d-flex align-items-center">
-            <i class="fa-solid fa-box fa-2x text-primary me-3"></i>
-            <div>
-              <div class="text-muted small">Produits actifs</div>
-              <div class="fs-3 fw-bold"><%= totalProduits %></div>
-            </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="stat-icon bg-soft-green"><i class="fa-solid fa-box"></i></div>
+            <p class="stat-label">Produits en stock</p>
+            <p class="stat-value"><%= totalProduits %></p>
+            <p class="stat-hint"><%= uniteEnStock.toLocaleString('fr-FR') %> unités au total</p>
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
-        <div class="card shadow-sm border-0 h-100 <%= totalAlertes > 0 ? 'border-danger' : '' %>">
-          <div class="card-body d-flex align-items-center">
-            <i class="fa-solid fa-triangle-exclamation fa-2x text-danger me-3"></i>
-            <div>
-              <div class="text-muted small">Produits en alerte</div>
-              <div class="fs-3 fw-bold text-danger"><%= totalAlertes %></div>
-            </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100 <%= totalAlertes > 0 ? 'stat-alert' : '' %>">
+          <div class="card-body">
+            <div class="stat-icon bg-soft-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <p class="stat-label">Alertes stock bas</p>
+            <p class="stat-value"><%= totalAlertes %></p>
+            <p class="stat-hint">produit(s) sous le seuil</p>
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-body d-flex align-items-center">
-            <i class="fa-solid fa-money-bill fa-2x text-success me-3"></i>
-            <div>
-              <div class="text-muted small">Solde de la caisse</div>
-              <div class="fs-3 fw-bold text-success"><%= soldeCaisse.toLocaleString('fr-FR') %> F</div>
-            </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="stat-icon bg-soft-gold"><i class="fa-solid fa-wallet"></i></div>
+            <p class="stat-label">Solde de la caisse</p>
+            <p class="stat-value"><%= soldeCaisse.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</p>
+            <p class="stat-hint">mis à jour à chaque vente</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100">
+          <div class="card-body">
+            <div class="stat-icon bg-soft-blue"><i class="fa-solid fa-receipt"></i></div>
+            <p class="stat-label">Ventes du jour</p>
+            <p class="stat-value"><%= ventesDuJour %></p>
+            <p class="stat-hint"><%= caDuJour.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F encaissés</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Boutons rapides -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
-      <a href="/ventes/nouvelle" class="btn btn-primary btn-lg flex-fill"><i class="fa-solid fa-cart-shopping"></i> Nouvelle vente</a>
-      <a href="/stock/entree" class="btn btn-success btn-lg flex-fill"><i class="fa-solid fa-arrow-down"></i> Entrée stock</a>
-      <a href="/stock/sortie" class="btn btn-warning btn-lg flex-fill"><i class="fa-solid fa-arrow-up"></i> Sortie stock</a>
-      <a href="/caisse/entree" class="btn btn-outline-success btn-lg flex-fill"><i class="fa-solid fa-plus"></i> Entrée caisse</a>
-      <a href="/caisse/sortie" class="btn btn-outline-danger btn-lg flex-fill"><i class="fa-solid fa-minus"></i> Sortie caisse</a>
+    <!-- Actions rapides -->
+    <div class="quick-actions mb-4">
+      <a href="/ventes/nouvelle" class="quick-action"><i class="fa-solid fa-cart-shopping"></i><span>Vendre</span></a>
+      <a href="/stock/entree" class="quick-action"><i class="fa-solid fa-arrow-down"></i><span>Réapprovisionner</span></a>
+      <a href="/stock/sortie" class="quick-action"><i class="fa-solid fa-arrow-up"></i><span>Perte / casse</span></a>
+      <a href="/caisse" class="quick-action"><i class="fa-solid fa-wallet"></i><span>Caisse</span></a>
+      <a href="/produits" class="quick-action"><i class="fa-solid fa-box"></i><span>Produits</span></a>
+      <% if (currentUser.role === 'admin') { %>
+      <a href="/rapports" class="quick-action"><i class="fa-solid fa-chart-line"></i><span>Rapports</span></a>
+      <% } %>
+      <a href="/assistant" class="quick-action quick-action-accent"><i class="fa-solid fa-comments"></i><span>Assistant plantes</span></a>
     </div>
 
     <div class="row g-3">
-      <!-- Derniers mouvements de stock -->
-      <div class="col-12 col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-header bg-white"><i class="fa-solid fa-clock-rotate-left"></i> 5 derniers mouvements de stock</div>
+      <!-- Derniers mouvements -->
+      <div class="col-lg-7">
+        <div class="card h-100">
+          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <strong><i class="fa-solid fa-clock-rotate-left text-primary"></i> Derniers mouvements</strong>
+            <a href="/stock/historique" class="btn btn-sm btn-outline-primary rounded-pill">Tout voir</a>
+          </div>
           <div class="table-responsive">
-            <table class="table table-sm mb-0">
-              <thead>
-                <tr><th>Type</th><th>Produit</th><th>Qté</th><th>Date</th></tr>
-              </thead>
+            <table class="table table-hover align-middle mb-0">
               <tbody>
                 <% if (derniersMouvements.length === 0) { %>
-                  <tr><td colspan="4" class="text-center text-muted py-3">Aucun mouvement enregistré</td></tr>
+                  <tr><td class="text-center text-muted py-4">Aucun mouvement pour le moment</td></tr>
                 <% } %>
                 <% derniersMouvements.forEach(m => { %>
-                  <tr>
-                    <td>
-                      <% if (m.type === 'entree') { %>
-                        <span class="badge bg-success">Entrée</span>
-                      <% } else if (m.type === 'sortie') { %>
-                        <span class="badge bg-warning text-dark">Sortie</span>
-                      <% } else { %>
-                        <span class="badge bg-primary">Vente</span>
-                      <% } %>
-                    </td>
-                    <td><%= m.produit_nom || '—' %></td>
-                    <td><%= m.quantite %></td>
-                    <td class="small text-muted"><%= new Date(m.date_mouvement).toLocaleString('fr-FR') %></td>
-                  </tr>
+                <tr>
+                  <td style="width:56px">
+                    <% if (m.photo_url) { %>
+                      <img src="<%= m.photo_url %>" alt="" class="miniature-produit">
+                    <% } else { %>
+                      <div class="miniature-vide"><i class="fa-solid fa-seedling"></i></div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <div class="fw-semibold"><%= m.produit_nom || 'Produit supprimé' %></div>
+                    <div class="small text-muted"><%= new Date(m.date_mouvement).toLocaleString('fr-FR') %><%= m.user_email ? ' · ' + m.user_email : '' %></div>
+                  </td>
+                  <td class="text-end">
+                    <% if (m.type === 'vente') { %>
+                      <span class="badge badge-vente"><i class="fa-solid fa-cart-shopping"></i> Vente</span>
+                    <% } else if (m.type === 'entree') { %>
+                      <span class="badge badge-entree"><i class="fa-solid fa-arrow-down"></i> Entrée</span>
+                    <% } else { %>
+                      <span class="badge badge-sortie"><i class="fa-solid fa-arrow-up"></i> Sortie</span>
+                    <% } %>
+                    <div class="fw-bold mt-1"><%= m.quantite %></div>
+                  </td>
+                </tr>
                 <% }) %>
               </tbody>
             </table>
@@ -91,29 +119,29 @@
         </div>
       </div>
 
-      <!-- Top 5 produits en alerte -->
-      <div class="col-12 col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-header bg-white"><i class="fa-solid fa-triangle-exclamation text-danger"></i> Produits les plus en alerte</div>
-          <div class="table-responsive">
-            <table class="table table-sm mb-0">
-              <thead>
-                <tr><th>Produit</th><th>Stock</th><th>Seuil</th></tr>
-              </thead>
-              <tbody>
-                <% if (top5Alertes.length === 0) { %>
-                  <tr><td colspan="3" class="text-center text-muted py-3">Aucune alerte actuellement</td></tr>
-                <% } %>
-                <% top5Alertes.forEach(p => { %>
-                  <tr class="table-danger">
-                    <td><%= p.nom %></td>
-                    <td><%= p.stock_actuel %></td>
-                    <td><%= p.seuil_alerte %></td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
+      <!-- Alertes stock -->
+      <div class="col-lg-5">
+        <div class="card h-100">
+          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <strong><i class="fa-solid fa-triangle-exclamation text-danger"></i> Stocks à surveiller</strong>
+            <a href="/produits" class="btn btn-sm btn-outline-primary rounded-pill">Produits</a>
           </div>
+          <ul class="list-group list-group-flush">
+            <% if (top5Alertes.length === 0) { %>
+              <li class="list-group-item text-center text-muted py-4">
+                <i class="fa-solid fa-circle-check text-success"></i> Aucun stock en alerte
+              </li>
+            <% } %>
+            <% top5Alertes.forEach(p => { %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold"><%= p.nom %></div>
+                <div class="small text-muted">Réf. <%= p.reference %> · seuil <%= p.seuil_alerte %></div>
+              </div>
+              <span class="badge badge-alerte">Stock : <%= p.stock_actuel %></span>
+            </li>
+            <% }) %>
+          </ul>
         </div>
       </div>
     </div>

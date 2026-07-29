@@ -1,5 +1,5 @@
 <% if (currentUser) { %>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-vert sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="/dashboard">
       <i class="fa-solid fa-leaf"></i> Viny Plantes
@@ -39,7 +39,16 @@
             <li><a class="dropdown-item" href="/caisse/historique"><i class="fa-solid fa-clock-rotate-left"></i> Historique caisse</a></li>
           </ul>
         </li>
+        <li class="nav-item">
+          <a class="nav-link py-3 py-lg-2" href="/assistant"><i class="fa-solid fa-comments"></i> Assistant</a>
+        </li>
         <% if (currentUser.role === 'admin') { %>
+        <li class="nav-item">
+          <a class="nav-link py-3 py-lg-2" href="/rapports"><i class="fa-solid fa-chart-line"></i> Rapports</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link py-3 py-lg-2" href="/journal"><i class="fa-solid fa-list-check"></i> Journal</a>
+        </li>
         <li class="nav-item">
           <a class="nav-link py-3 py-lg-2" href="/users"><i class="fa-solid fa-users"></i> Utilisateurs</a>
         </li>

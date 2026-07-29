@@ -29,6 +29,43 @@
       <a href="/caisse/historique" class="btn btn-outline-secondary btn-lg flex-fill"><i class="fa-solid fa-clock-rotate-left"></i> Voir l'historique complet</a>
     </div>
 
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="fa-solid fa-lock text-primary"></i> Clôtures de caisse
+          <span class="small text-muted">(automatique chaque jour à <%= heureCloture %> h)</span>
+        </span>
+        <% if (currentUser.role === 'admin') { %>
+          <form method="POST" action="/caisse/cloturer" onsubmit="return confirm('Clôturer la caisse pour aujourd\'hui ?');">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-sm btn-primary rounded-pill"><i class="fa-solid fa-lock"></i> Clôturer aujourd'hui</button>
+          </form>
+        <% } %>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>Jour</th><th>Ouverture</th><th>Entrées</th><th>Sorties</th><th>Ventes</th><th>Solde final</th><th>Type</th></tr>
+          </thead>
+          <tbody>
+            <% if (clotures.length === 0) { %>
+              <tr><td colspan="7" class="text-center text-muted py-4">Aucune clôture enregistrée pour le moment</td></tr>
+            <% } %>
+            <% clotures.forEach(c => { %>
+              <tr>
+                <td><%= c.date_cloture %></td>
+                <td><%= (c.solde_ouverture || 0).toLocaleString('fr-FR') %> F</td>
+                <td class="text-success"><%= (c.total_entrees || 0).toLocaleString('fr-FR') %> F</td>
+                <td class="text-danger"><%= (c.total_sorties || 0).toLocaleString('fr-FR') %> F</td>
+                <td><%= c.nb_ventes || 0 %></td>
+                <td class="fw-bold"><%= (c.solde_final || 0).toLocaleString('fr-FR') %> F</td>
+                <td><span class="badge <%= c.automatique ? 'bg-secondary' : 'bg-primary' %>"><%= c.automatique ? 'Auto' : 'Manuelle' %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="card shadow-sm border-0">
       <div class="card-header bg-white">Derniers mouvements</div>
       <div class="table-responsive">

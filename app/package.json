@@ -1,7 +1,7 @@
 {
-  "name": "stock-caisse-app",
+  "name": "viny-plantes",
   "version": "1.0.0",
-  "description": "Application de gestion de stock et de petite caisse",
+  "description": "SmartStock — gestion de stock, caisse, rapports et assistant plantes",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -15,7 +15,9 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "method-override": "^3.0.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3"
   },
   "engines": {
     "node": ">=18.0.0"

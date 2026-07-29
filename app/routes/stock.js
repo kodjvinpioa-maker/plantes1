@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { requireLogin, requireAdmin } = require('../middleware/auth');
+const { log } = require('../lib/activity');
 
 const STOCK_SQL = `
   COALESCE((
@@ -78,7 +79,7 @@ router.post('/ventes/nouvelle', requireLogin, (req, res) => {
       );
     }
 
-    db.get('SELECT nom FROM produits WHERE id = ?', [produit_id], (prodErr, produit) => {
+    db.get('SELECT nom, prix_achat FROM produits WHERE id = ?', [produit_id], (prodErr, produit) => {
       if (prodErr || !produit) {
         return renderVenteError(req, res, 'Produit introuvable.');
       }
@@ -86,9 +87,9 @@ router.post('/ventes/nouvelle', requireLogin, (req, res) => {
       const dateMvt = date_mouvement ? new Date(date_mouvement).toISOString() : new Date().toISOString();
 
       db.run(
-        `INSERT INTO mouvements_stock (type, produit_id, quantite, prix_vente_effectif, date_mouvement, user_id, commentaire)
-         VALUES ('vente', ?, ?, ?, ?, ?, ?)`,
-        [produit_id, qte, prix || 0, dateMvt, userId, commentaire || null],
+        `INSERT INTO mouvements_stock (type, produit_id, quantite, prix_vente_effectif, prix_achat_effectif, date_mouvement, user_id, commentaire)
+         VALUES ('vente', ?, ?, ?, ?, ?, ?, ?)`,
+        [produit_id, qte, prix || 0, produit.prix_achat || 0, dateMvt, userId, commentaire || null],
         function (insertErr) {
           if (insertErr) {
             console.error(insertErr);
@@ -105,6 +106,7 @@ router.post('/ventes/nouvelle', requireLogin, (req, res) => {
               if (caisseErr) {
                 console.error(caisseErr);
               }
+              log(req, 'vente', `Vente #${venteId}`, `${qte} x ${produit.nom} — ${montant.toFixed(2)}`);
               res.redirect('/ventes/nouvelle?success=vente');
             }
           );
@@ -174,6 +176,7 @@ router.post('/stock/entree', requireLogin, (req, res) => {
         console.error(err);
         return res.status(500).send('Erreur serveur');
       }
+      log(req, 'stock_entree', `Produit #${produit_id}`, `Entrée de ${qte}${commentaire ? ' — ' + commentaire : ''}`);
       res.redirect('/stock/entree?success=entree');
     }
   );
@@ -230,6 +233,7 @@ router.post('/stock/sortie', requireLogin, (req, res) => {
           console.error(insertErr);
           return renderSortieError("Erreur lors de l'enregistrement de la sortie.");
         }
+        log(req, 'stock_sortie', `Produit #${produit_id}`, `Sortie de ${qte}${commentaire ? ' — ' + commentaire : ''}`);
         res.redirect('/stock/sortie?success=sortie');
       }
     );
@@ -361,6 +365,7 @@ router.post('/stock/vente/:id/annuler', requireAdmin, (req, res) => {
           console.error(stockErr);
           return res.status(500).send('Erreur lors de la suppression du mouvement de stock.');
         }
+        log(req, 'vente_annulation', `Vente #${venteId}`, `Quantité ${vente.quantite}`);
         res.redirect('/stock/historique?success=annulation');
       });
     });

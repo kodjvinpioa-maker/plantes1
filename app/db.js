@@ -1,14 +1,12 @@
 // db.js
-// Initialisation de la base de données SQLite et création des tables si elles n'existent pas.
-// Contient également la logique de seed (création des utilisateurs de test au premier lancement).
+// Initialisation SQLite : création des tables, migrations légères et seed.
 
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'data.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data.db');
 
-// Ouverture / création du fichier de base de données
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
     console.error('Erreur lors de la connexion à la base de données :', err.message);
@@ -17,12 +15,8 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
   console.log('Connecté à la base de données SQLite :', DB_PATH);
 });
 
-// Active les clés étrangères (désactivées par défaut dans SQLite)
 db.run('PRAGMA foreign_keys = ON');
 
-// ---------------------------------------------------------------------------
-// Création des tables (si elles n'existent pas déjà)
-// ---------------------------------------------------------------------------
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,6 +33,7 @@ CREATE TABLE IF NOT EXISTS produits (
   seuil_alerte INTEGER DEFAULT 0,
   prix_vente REAL,
   prix_achat REAL,
+  photo_url TEXT,
   actif INTEGER DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -49,6 +44,7 @@ CREATE TABLE IF NOT EXISTS mouvements_stock (
   produit_id INTEGER REFERENCES produits(id),
   quantite REAL NOT NULL,
   prix_vente_effectif REAL,
+  prix_achat_effectif REAL,
   date_mouvement DATETIME DEFAULT CURRENT_TIMESTAMP,
   user_id INTEGER REFERENCES users(id),
   commentaire TEXT
@@ -65,11 +61,49 @@ CREATE TABLE IF NOT EXISTS mouvements_caisse (
   user_id INTEGER REFERENCES users(id),
   commentaire TEXT
 );
+
+CREATE TABLE IF NOT EXISTS journal_activite (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id),
+  user_email TEXT,
+  action TEXT NOT NULL,
+  cible TEXT,
+  details TEXT,
+  date_action DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS clotures_caisse (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date_cloture TEXT UNIQUE NOT NULL,
+  total_entrees REAL NOT NULL DEFAULT 0,
+  total_sorties REAL NOT NULL DEFAULT 0,
+  solde_final REAL NOT NULL DEFAULT 0,
+  nb_ventes INTEGER NOT NULL DEFAULT 0,
+  chiffre_affaires REAL NOT NULL DEFAULT 0,
+  automatique INTEGER NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ms_date ON mouvements_stock(date_mouvement);
+CREATE INDEX IF NOT EXISTS idx_mc_date ON mouvements_caisse(date_mouvement);
+CREATE INDEX IF NOT EXISTS idx_journal_date ON journal_activite(date_action);
 `;
 
-// ---------------------------------------------------------------------------
-// Initialisation : création des tables puis seed des utilisateurs de test
-// ---------------------------------------------------------------------------
+// Migrations légères : ajoute les colonnes manquantes sur une base existante.
+function migrate(cb) {
+  const alters = [
+    'ALTER TABLE produits ADD COLUMN photo_url TEXT',
+    'ALTER TABLE mouvements_stock ADD COLUMN prix_achat_effectif REAL',
+  ];
+  let done = 0;
+  alters.forEach((sql) => {
+    db.run(sql, () => {
+      // Erreur ignorée : la colonne existe déjà.
+      if (++done === alters.length && cb) cb();
+    });
+  });
+}
+
 function init() {
   db.serialize(() => {
     db.exec(SCHEMA, (err) => {
@@ -77,43 +111,31 @@ function init() {
         console.error('Erreur lors de la création des tables :', err.message);
         return;
       }
-      seedUsers();
+      migrate(seedUsers);
     });
   });
 }
 
-// Crée un admin et un collaborateur de test si la table users est vide
 function seedUsers() {
   db.get('SELECT COUNT(*) AS count FROM users', (err, row) => {
-    if (err) {
-      console.error('Erreur lors de la vérification des utilisateurs :', err.message);
-      return;
-    }
-    if (row.count === 0) {
-      const saltRounds = 10;
-      const admin = { email: 'admin@example.com', password: 'admin123', role: 'admin' };
-      const collab = { email: 'collab@example.com', password: 'collab123', role: 'collaborateur' };
+    if (err) return console.error('Erreur seed :', err.message);
+    if (row.count > 0) return;
 
-      [admin, collab].forEach((u) => {
-        bcrypt.hash(u.password, saltRounds, (hashErr, hash) => {
-          if (hashErr) {
-            console.error('Erreur de hashage du mot de passe :', hashErr.message);
-            return;
-          }
-          db.run(
-            'INSERT INTO users (email, password, role) VALUES (?, ?, ?)',
-            [u.email, hash, u.role],
-            (insertErr) => {
-              if (insertErr) {
-                console.error(`Erreur lors de la création de ${u.email} :`, insertErr.message);
-              } else {
-                console.log(`Utilisateur de test créé : ${u.email} / ${u.password} (${u.role})`);
-              }
-            }
-          );
+    const saltRounds = 10;
+    const comptes = [
+      { email: process.env.ADMIN_EMAIL || 'admin@example.com', password: process.env.ADMIN_PASSWORD || 'admin123', role: 'admin' },
+      { email: 'collab@example.com', password: 'collab123', role: 'collaborateur' },
+    ];
+
+    comptes.forEach((u) => {
+      bcrypt.hash(u.password, saltRounds, (hashErr, hash) => {
+        if (hashErr) return console.error('Erreur de hashage :', hashErr.message);
+        db.run('INSERT INTO users (email, password, role) VALUES (?, ?, ?)', [u.email, hash, u.role], (insErr) => {
+          if (insErr) console.error(`Erreur création ${u.email} :`, insErr.message);
+          else console.log(`Utilisateur créé : ${u.email} (${u.role})`);
         });
       });
-    }
+    });
   });
 }
 

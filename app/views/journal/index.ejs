@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <%- include('../partials/head', { title: "Journal d'activité" }) %>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container-fluid py-4 px-3 px-md-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h3 class="mb-0"><i class="fa-solid fa-list-check text-primary"></i> Journal d'activité</h3>
+      <a class="btn btn-outline-primary rounded-pill"
+         href="/journal/export.csv?user_id=<%= filters.user_id || '' %>&action=<%= filters.action || '' %>&date_debut=<%= filters.date_debut || '' %>&date_fin=<%= filters.date_fin || '' %>">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </a>
+    </div>
+
+    <form method="GET" action="/journal" class="card card-body mb-4">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Utilisateur</label>
+          <select name="user_id" class="form-select">
+            <option value="">Tous</option>
+            <% users.forEach(u => { %>
+              <option value="<%= u.id %>" <%= String(filters.user_id) === String(u.id) ? 'selected' : '' %>><%= u.email %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Action</label>
+          <select name="action" class="form-select">
+            <option value="">Toutes</option>
+            <% actions.forEach(a => { %>
+              <option value="<%= a %>" <%= filters.action === a ? 'selected' : '' %>><%= a %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Du</label>
+          <input type="date" name="date_debut" class="form-control" value="<%= filters.date_debut || '' %>">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Au</label>
+          <input type="date" name="date_fin" class="form-control" value="<%= filters.date_fin || '' %>">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary w-100"><i class="fa-solid fa-filter"></i> Filtrer</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Cible</th><th>Détails</th></tr>
+          </thead>
+          <tbody>
+            <% if (entrees.length === 0) { %>
+              <tr><td colspan="5" class="text-center text-muted py-4">Aucune activité enregistrée</td></tr>
+            <% } %>
+            <% entrees.forEach(e => { %>
+              <tr>
+                <td class="text-nowrap small"><%= new Date(e.date_action).toLocaleString('fr-FR') %></td>
+                <td><%= e.user_email || 'Système' %></td>
+                <td><span class="badge badge-action"><%= e.action %></span></td>
+                <td><%= e.cible || '—' %></td>
+                <td class="small text-muted"><%= e.details || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

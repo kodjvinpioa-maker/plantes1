@@ -7,7 +7,9 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { requireLogin } = require('../middleware/auth');
+const { requireLogin, requireAdmin } = require('../middleware/auth');
+const { log } = require('../lib/activity');
+const { cloturerJournee, dateDuJour } = require('../lib/cloture');
 
 // Calcule le solde actuel de la caisse : total entrées - total sorties
 function getSoldeCaisse(cb) {
@@ -45,13 +47,22 @@ router.get('/caisse', requireLogin, (req, res) => {
           console.error(mvtErr);
           return res.status(500).send('Erreur serveur');
         }
-        res.render('caisse/index', {
-          solde,
-          totalEntrees,
-          totalSorties,
-          derniersMouvements,
-          csrfToken: req.csrfToken(),
-        });
+        db.all(
+          'SELECT * FROM clotures_caisse ORDER BY date_cloture DESC LIMIT 7',
+          [],
+          (clotErr, clotures) => {
+            res.render('caisse/index', {
+              title: 'Caisse',
+              solde,
+              totalEntrees,
+              totalSorties,
+              derniersMouvements,
+              clotures: clotures || [],
+              heureCloture: process.env.CLOTURE_HEURE || '23',
+              csrfToken: req.csrfToken(),
+            });
+          }
+        );
       }
     );
   });
@@ -92,6 +103,7 @@ router.post('/caisse/entree', requireLogin, (req, res) => {
         console.error(err);
         return res.status(500).send('Erreur serveur');
       }
+      log(req, 'caisse_entree', motif.trim(), `Montant ${mnt.toFixed(2)}`);
       res.redirect('/caisse/entree?success=entree');
     }
   );
@@ -132,6 +144,7 @@ router.post('/caisse/sortie', requireLogin, (req, res) => {
         console.error(err);
         return res.status(500).send('Erreur serveur');
       }
+      log(req, 'caisse_sortie', motif.trim(), `Montant ${mnt.toFixed(2)}`);
       res.redirect('/caisse/sortie?success=sortie');
     }
   );
@@ -205,6 +218,23 @@ router.get('/caisse/historique/export.csv', requireLogin, (req, res) => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename=historique_caisse.csv');
     res.send('\uFEFF' + csv);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CLÔTURE MANUELLE DE LA JOURNÉE (admin) — la clôture automatique tourne
+// chaque jour à l'heure définie par CLOTURE_HEURE (23h par défaut).
+// ---------------------------------------------------------------------------
+router.post('/caisse/cloturer', requireAdmin, (req, res) => {
+  const jour = (req.body.jour || dateDuJour()).slice(0, 10);
+
+  cloturerJournee(jour, false, (err, resume) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Erreur lors de la clôture.');
+    }
+    log(req, 'cloture_manuelle', `Caisse ${jour}`, `Solde final ${resume.solde_final.toFixed(2)}`);
+    res.redirect('/caisse?success=cloture');
   });
 });
 

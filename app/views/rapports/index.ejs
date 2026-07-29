@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <%- include('../partials/head', { title: 'Rapports' }) %>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container-fluid py-4 px-3 px-md-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h3 class="mb-0"><i class="fa-solid fa-chart-line text-primary"></i> Rapports</h3>
+      <a class="btn btn-outline-primary rounded-pill"
+         href="/rapports/export.csv?periode=<%= filters.periode %>&date_debut=<%= filters.date_debut %>&date_fin=<%= filters.date_fin %>">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </a>
+    </div>
+
+    <form method="GET" action="/rapports" class="card card-body mb-4">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Période</label>
+          <select name="periode" class="form-select" onchange="this.form.submit()">
+            <% ['jour','semaine','mois','personnalise'].forEach(p => { %>
+              <option value="<%= p %>" <%= filters.periode === p ? 'selected' : '' %>><%= p.charAt(0).toUpperCase() + p.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Du</label>
+          <input type="date" name="date_debut" class="form-control" value="<%= filters.date_debut %>">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Au</label>
+          <input type="date" name="date_fin" class="form-control" value="<%= filters.date_fin %>">
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary w-100"><i class="fa-solid fa-filter"></i> Appliquer</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100"><div class="card-body">
+          <div class="stat-icon bg-soft-green"><i class="fa-solid fa-coins"></i></div>
+          <p class="stat-label">Chiffre d'affaires</p>
+          <p class="stat-value"><%= stats.chiffreAffaires.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</p>
+        </div></div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100"><div class="card-body">
+          <div class="stat-icon bg-soft-blue"><i class="fa-solid fa-receipt"></i></div>
+          <p class="stat-label">Nombre de ventes</p>
+          <p class="stat-value"><%= stats.nbVentes %></p>
+        </div></div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100"><div class="card-body">
+          <div class="stat-icon bg-soft-gold"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <p class="stat-label">Bénéfice brut</p>
+          <p class="stat-value"><%= stats.beneficeBrut.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</p>
+          <p class="stat-hint">coût d'achat : <%= stats.coutAchat.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</p>
+        </div></div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card h-100"><div class="card-body">
+          <div class="stat-icon bg-soft-green"><i class="fa-solid fa-basket-shopping"></i></div>
+          <p class="stat-label">Panier moyen</p>
+          <p class="stat-value"><%= stats.panierMoyen.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-7">
+        <div class="card h-100">
+          <div class="card-header bg-transparent"><strong>Évolution du chiffre d'affaires</strong></div>
+          <div class="card-body"><canvas id="graphCA" height="130"></canvas></div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card h-100">
+          <div class="card-header bg-transparent"><strong>Meilleures ventes</strong></div>
+          <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+              <thead class="table-light"><tr><th>Produit</th><th class="text-end">Qté</th><th class="text-end">CA</th></tr></thead>
+              <tbody>
+                <% if (topProduits.length === 0) { %>
+                  <tr><td colspan="3" class="text-center text-muted py-4">Aucune vente sur la période</td></tr>
+                <% } %>
+                <% topProduits.forEach(p => { %>
+                  <tr>
+                    <td><%= p.nom || 'Produit supprimé' %><div class="small text-muted"><%= p.reference || '' %></div></td>
+                    <td class="text-end"><%= p.quantite_vendue %></td>
+                    <td class="text-end"><%= (p.ca || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    const labels = <%- JSON.stringify(stats.graph.labels) %>;
+    const valeurs = <%- JSON.stringify(stats.graph.valeurs) %>;
+    new Chart(document.getElementById('graphCA'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: "Chiffre d'affaires",
+          data: valeurs,
+          borderColor: '#2f7a4d',
+          backgroundColor: 'rgba(47,122,77,.15)',
+          fill: true,
+          tension: .35,
+          pointRadius: 3
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

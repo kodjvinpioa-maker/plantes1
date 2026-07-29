@@ -30,6 +30,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+// Analyse des formulaires avec photo (multipart) AVANT csurf, sinon le jeton
+// CSRF envoyé dans le formulaire ne peut pas être lu.
+app.use(require('./lib/upload').photoUpload);
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -74,6 +77,9 @@ const stockRoutes = require('./routes/stock');
 const caisseRoutes = require('./routes/caisse');
 const dashboardRoutes = require('./routes/dashboard');
 const usersRoutes = require('./routes/users');
+const rapportsRoutes = require('./routes/rapports');
+const journalRoutes = require('./routes/journal');
+const assistantRoutes = require('./routes/assistant');
 
 app.use('/', authRoutes);
 app.use('/', produitsRoutes);
@@ -81,6 +87,9 @@ app.use('/', stockRoutes);
 app.use('/', caisseRoutes);
 app.use('/', dashboardRoutes);
 app.use('/', usersRoutes);
+app.use('/', rapportsRoutes);
+app.use('/', journalRoutes);
+app.use('/', assistantRoutes);
 
 // Redirection racine vers le tableau de bord (ou login si non connecté)
 app.get('/', requireLogin, (req, res) => {
@@ -99,6 +108,14 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+// Fichier image trop lourd ou invalide (upload de photo produit)
+app.use((err, req, res, next) => {
+  if (err && (err.code === 'LIMIT_FILE_SIZE' || err.code === 'FICHIER_INVALIDE')) {
+    return res.status(400).send("Image invalide : formats JPG/PNG/WEBP acceptés, 3 Mo maximum.");
+  }
+  next(err);
+});
+
 // Page 404
 app.use((req, res) => {
   res.status(404).send('Page non trouvée.');
@@ -113,6 +130,10 @@ app.use((err, req, res, next) => {
 // ---------------------------------------------------------------------------
 // Démarrage du serveur
 // ---------------------------------------------------------------------------
+// Clôture automatique quotidienne de la caisse (23 h par défaut,
+// modifiable via la variable d'environnement CLOTURE_HEURE)
+require('./lib/cloture').demarrerPlanificateur();
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Serveur démarré sur http://0.0.0.0:${PORT}`);
   console.log('Comptes de test :');

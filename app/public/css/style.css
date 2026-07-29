@@ -244,3 +244,133 @@ h1, h2, h3, h4, .navbar-brand {
   .btn-lg { padding: 0.85rem 1.1rem; font-size: 1.05rem; }
   .navbar-nav .nav-link { font-size: 1.05rem; }
 }
+
+/* ==========================================================================
+   THÈME VINY PLANTES — vert, beige, blanc cassé
+   ========================================================================== */
+:root {
+  --vp-vert: #2f7a4d;
+  --vp-vert-fonce: #235c3a;
+  --vp-vert-clair: #e5f1e8;
+  --vp-beige: #f3ead9;
+  --vp-blanc-casse: #fbf9f4;
+  --vp-texte: #26332b;
+  --vp-or: #c9a227;
+  --vp-rouge: #c0392b;
+  --bs-primary: var(--vp-vert);
+}
+
+body {
+  background-color: var(--vp-blanc-casse);
+  color: var(--vp-texte);
+}
+
+.navbar-vert {
+  background: linear-gradient(90deg, var(--vp-vert-fonce), var(--vp-vert));
+  box-shadow: 0 2px 14px rgba(35, 92, 58, .18);
+}
+.navbar-vert .navbar-brand { font-weight: 700; letter-spacing: .3px; }
+
+.btn-primary {
+  background-color: var(--vp-vert);
+  border-color: var(--vp-vert);
+}
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--vp-vert-fonce);
+  border-color: var(--vp-vert-fonce);
+}
+.btn-outline-primary { color: var(--vp-vert); border-color: var(--vp-vert); }
+.btn-outline-primary:hover { background-color: var(--vp-vert); border-color: var(--vp-vert); }
+.text-primary { color: var(--vp-vert) !important; }
+.btn { border-radius: 999px; }
+.form-control, .form-select { border-radius: 14px; }
+.form-control:focus, .form-select:focus {
+  border-color: var(--vp-vert);
+  box-shadow: 0 0 0 .2rem rgba(47, 122, 77, .15);
+}
+
+.card {
+  border: none;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(38, 51, 43, .07);
+}
+.card-header { border-bottom: 1px solid var(--vp-beige); font-weight: 600; }
+.table > thead.table-light th { background: var(--vp-beige); border: none; }
+
+/* Cartes d'indicateurs */
+.stat-card .card-body { padding: 1.1rem 1.2rem; }
+.stat-card .stat-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; margin-bottom: .6rem;
+}
+.bg-soft-green { background: var(--vp-vert-clair); color: var(--vp-vert); }
+.bg-soft-gold  { background: #fbf1cf; color: #8a6d09; }
+.bg-soft-red   { background: #fbe3e0; color: var(--vp-rouge); }
+.bg-soft-blue  { background: #e2eef7; color: #1f5f88; }
+.stat-label { margin: 0; font-size: .82rem; color: #7a8a80; }
+.stat-value { margin: .1rem 0 0; font-size: 1.6rem; font-weight: 700; }
+.stat-hint  { margin: 0; font-size: .76rem; color: #97a49b; }
+.stat-alert { box-shadow: 0 6px 24px rgba(192, 57, 43, .18); }
+
+/* Actions rapides */
+.quick-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.quick-action {
+  flex: 1 1 130px;
+  display: flex; flex-direction: column; align-items: center; gap: .35rem;
+  padding: .9rem .5rem;
+  background: #fff; border-radius: 18px; text-decoration: none;
+  color: var(--vp-texte); font-size: .85rem; font-weight: 600;
+  box-shadow: 0 4px 16px rgba(38, 51, 43, .07);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.quick-action i { font-size: 1.25rem; color: var(--vp-vert); }
+.quick-action:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(38, 51, 43, .12); color: var(--vp-vert-fonce); }
+.quick-action-accent { background: var(--vp-beige); }
+
+/* Miniatures produits */
+.miniature-produit {
+  width: 44px; height: 44px; object-fit: cover;
+  border-radius: 12px; background: var(--vp-beige);
+}
+.miniature-vide {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--vp-beige); color: var(--vp-vert);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Badges */
+.badge-vente  { background: var(--vp-vert-clair); color: var(--vp-vert-fonce); }
+.badge-entree { background: #e2eef7; color: #1f5f88; }
+.badge-sortie { background: #fbe3e0; color: var(--vp-rouge); }
+.badge-alerte { background: var(--vp-rouge); color: #fff; border-radius: 999px; }
+.badge-action { background: var(--vp-beige); color: var(--vp-texte); }
+
+/* Assistant plantes */
+.assistant-avatar {
+  width: 62px; height: 62px; margin: 0 auto .7rem;
+  border-radius: 50%; background: var(--vp-vert-clair); color: var(--vp-vert);
+  display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+}
+.chat-card { overflow: hidden; }
+.chat-zone {
+  padding: 1rem; height: 52vh; min-height: 300px; overflow-y: auto;
+  background: var(--vp-blanc-casse);
+  display: flex; flex-direction: column; gap: .6rem;
+}
+.chat-msg {
+  max-width: 85%; padding: .7rem .95rem; border-radius: 18px;
+  font-size: .93rem; white-space: pre-wrap; line-height: 1.45;
+}
+.chat-msg.bot { background: #fff; border: 1px solid var(--vp-beige); align-self: flex-start; }
+.chat-msg.user { background: var(--vp-vert); color: #fff; align-self: flex-end; }
+.chat-msg.pending { opacity: .6; font-style: italic; }
+.chat-form { display: flex; gap: .5rem; padding: .8rem; border-top: 1px solid var(--vp-beige); background: #fff; }
+
+/* Mobile */
+@media (max-width: 576px) {
+  .stat-value { font-size: 1.3rem; }
+  .quick-action { flex: 1 1 45%; }
+  .display-4 { font-size: 2.1rem; }
+}

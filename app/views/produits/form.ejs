@@ -18,7 +18,7 @@
 
     <div class="card shadow-sm border-0">
       <div class="card-body">
-        <form method="POST" action="<%= produit && produit.id ? '/produits/' + produit.id + '/modifier' : '/produits/nouveau' %>">
+        <form method="POST" enctype="multipart/form-data" action="<%= produit && produit.id ? '/produits/' + produit.id + '/modifier' : '/produits/nouveau' %>">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
           <div class="mb-3">
@@ -50,6 +50,22 @@
             <div class="col-md-4 mb-3">
               <label class="form-label">Prix d'achat</label>
               <input type="number" step="0.01" name="prix_achat" class="form-control" value="<%= produit && produit.prix_achat != null ? produit.prix_achat : '' %>">
+            </div>
+          </div>
+
+          <div class="row align-items-end">
+            <div class="col-md-8 mb-3">
+              <label class="form-label">Photo du produit</label>
+              <input type="file" name="photo" accept="image/*" class="form-control">
+              <div class="form-text">JPG, PNG ou WEBP (3 Mo max). Vous pouvez aussi coller une adresse d'image ci-dessous.</div>
+              <input type="url" name="photo_url" class="form-control mt-2" placeholder="https://..." value="<%= produit && produit.photo_url && produit.photo_url.startsWith('http') ? produit.photo_url : '' %>">
+            </div>
+            <div class="col-md-4 mb-3 text-center">
+              <% if (produit && produit.photo_url) { %>
+                <img src="<%= produit.photo_url %>" alt="Photo de <%= produit.nom %>" class="img-thumbnail miniature-produit">
+              <% } else { %>
+                <div class="miniature-vide"><i class="fa-solid fa-seedling"></i></div>
+              <% } %>
             </div>
           </div>
 

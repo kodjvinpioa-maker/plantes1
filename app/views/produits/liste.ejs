@@ -28,6 +28,7 @@
         <table class="table table-hover mb-0 align-middle">
           <thead class="table-light">
             <tr>
+              <th>Photo</th>
               <th>Référence</th>
               <th>Nom</th>
               <th>Stock actuel</th>
@@ -40,10 +41,17 @@
           </thead>
           <tbody>
             <% if (produits.length === 0) { %>
-              <tr><td colspan="8" class="text-center text-muted py-4">Aucun produit trouvé</td></tr>
+              <tr><td colspan="9" class="text-center text-muted py-4">Aucun produit trouvé</td></tr>
             <% } %>
             <% produits.forEach(p => { %>
               <tr class="<%= p.stock_actuel <= p.seuil_alerte ? 'table-danger' : '' %> <%= !p.actif ? 'opacity-50' : '' %>">
+                <td>
+                  <% if (p.photo_url) { %>
+                    <img src="<%= p.photo_url %>" alt="<%= p.nom %>" class="miniature-produit">
+                  <% } else { %>
+                    <div class="miniature-vide"><i class="fa-solid fa-seedling"></i></div>
+                  <% } %>
+                </td>
                 <td><%= p.reference %></td>
                 <td><%= p.nom %></td>
                 <td>
