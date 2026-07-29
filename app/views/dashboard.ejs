@@ -6,144 +6,168 @@
 <body>
   <%- include('partials/navbar') %>
 
-  <div class="container-fluid py-4 px-3 px-md-4">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-      <div>
-        <h3 class="mb-1"><i class="fa-solid fa-seedling text-primary"></i> Bonjour !</h3>
-        <p class="text-muted mb-0">Voici l'état de votre boutique aujourd'hui.</p>
-      </div>
-      <a href="/ventes/nouvelle" class="btn btn-primary btn-lg rounded-pill">
-        <i class="fa-solid fa-cart-shopping"></i> Nouvelle vente
-      </a>
-    </div>
+  <div class="dashboard-root">
+    <div class="container-fluid py-4 px-3 px-md-4">
 
-    <!-- Indicateurs clés -->
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-xl-3">
-        <div class="card stat-card h-100">
-          <div class="card-body">
-            <div class="stat-icon bg-soft-green"><i class="fa-solid fa-box"></i></div>
-            <p class="stat-label">Produits en stock</p>
-            <p class="stat-value"><%= totalProduits %></p>
-            <p class="stat-hint"><%= uniteEnStock.toLocaleString('fr-FR') %> unités au total</p>
+      <!-- Top: search + date filters -->
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="flex-grow-1">
+          <div class="input-group search-large">
+            <span class="input-group-text bg-transparent border-0"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="search" class="form-control search-input" placeholder="Rechercher un produit par nom ou code" aria-label="Recherche produit">
           </div>
         </div>
-      </div>
-      <div class="col-6 col-xl-3">
-        <div class="card stat-card h-100 <%= totalAlertes > 0 ? 'stat-alert' : '' %>">
-          <div class="card-body">
-            <div class="stat-icon bg-soft-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <p class="stat-label">Alertes stock bas</p>
-            <p class="stat-value"><%= totalAlertes %></p>
-            <p class="stat-hint">produit(s) sous le seuil</p>
-          </div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="small text-muted mb-0 me-1">Du</label>
+          <input type="date" class="form-control form-control-sm" value="<%= query.du || '' %>">
+          <label class="small text-muted mb-0 ms-2 me-1">Au</label>
+          <input type="date" class="form-control form-control-sm" value="<%= query.au || '' %>">
         </div>
-      </div>
-      <div class="col-6 col-xl-3">
-        <div class="card stat-card h-100">
-          <div class="card-body">
-            <div class="stat-icon bg-soft-gold"><i class="fa-solid fa-wallet"></i></div>
-            <p class="stat-label">Solde de la caisse</p>
-            <p class="stat-value"><%= soldeCaisse.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F</p>
-            <p class="stat-hint">mis à jour à chaque vente</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-xl-3">
-        <div class="card stat-card h-100">
-          <div class="card-body">
-            <div class="stat-icon bg-soft-blue"><i class="fa-solid fa-receipt"></i></div>
-            <p class="stat-label">Ventes du jour</p>
-            <p class="stat-value"><%= ventesDuJour %></p>
-            <p class="stat-hint"><%= caDuJour.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> F encaissés</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actions rapides -->
-    <div class="quick-actions mb-4">
-      <a href="/ventes/nouvelle" class="quick-action"><i class="fa-solid fa-cart-shopping"></i><span>Vendre</span></a>
-      <a href="/stock/entree" class="quick-action"><i class="fa-solid fa-arrow-down"></i><span>Réapprovisionner</span></a>
-      <a href="/stock/sortie" class="quick-action"><i class="fa-solid fa-arrow-up"></i><span>Perte / casse</span></a>
-      <a href="/caisse" class="quick-action"><i class="fa-solid fa-wallet"></i><span>Caisse</span></a>
-      <a href="/produits" class="quick-action"><i class="fa-solid fa-box"></i><span>Produits</span></a>
-      <% if (currentUser.role === 'admin') { %>
-      <a href="/rapports" class="quick-action"><i class="fa-solid fa-chart-line"></i><span>Rapports</span></a>
-      <% } %>
-      <a href="/assistant" class="quick-action quick-action-accent"><i class="fa-solid fa-comments"></i><span>Assistant plantes</span></a>
-    </div>
-
-    <div class="row g-3">
-      <!-- Derniers mouvements -->
-      <div class="col-lg-7">
-        <div class="card h-100">
-          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-            <strong><i class="fa-solid fa-clock-rotate-left text-primary"></i> Derniers mouvements</strong>
-            <a href="/stock/historique" class="btn btn-sm btn-outline-primary rounded-pill">Tout voir</a>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <tbody>
-                <% if (derniersMouvements.length === 0) { %>
-                  <tr><td class="text-center text-muted py-4">Aucun mouvement pour le moment</td></tr>
-                <% } %>
-                <% derniersMouvements.forEach(m => { %>
-                <tr>
-                  <td style="width:56px">
-                    <% if (m.photo_url) { %>
-                      <img src="<%= m.photo_url %>" alt="" class="miniature-produit">
-                    <% } else { %>
-                      <div class="miniature-vide"><i class="fa-solid fa-seedling"></i></div>
-                    <% } %>
-                  </td>
-                  <td>
-                    <div class="fw-semibold"><%= m.produit_nom || 'Produit supprimé' %></div>
-                    <div class="small text-muted"><%= new Date(m.date_mouvement).toLocaleString('fr-FR') %><%= m.user_email ? ' · ' + m.user_email : '' %></div>
-                  </td>
-                  <td class="text-end">
-                    <% if (m.type === 'vente') { %>
-                      <span class="badge badge-vente"><i class="fa-solid fa-cart-shopping"></i> Vente</span>
-                    <% } else if (m.type === 'entree') { %>
-                      <span class="badge badge-entree"><i class="fa-solid fa-arrow-down"></i> Entrée</span>
-                    <% } else { %>
-                      <span class="badge badge-sortie"><i class="fa-solid fa-arrow-up"></i> Sortie</span>
-                    <% } %>
-                    <div class="fw-bold mt-1"><%= m.quantite %></div>
-                  </td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
+        <div class="ms-3">
+          <a href="/ventes/nouvelle" class="btn btn-primary btn-lg rounded-pill">
+            <i class="fa-solid fa-cart-shopping"></i> Nouvelle vente
+          </a>
         </div>
       </div>
 
-      <!-- Alertes stock -->
-      <div class="col-lg-5">
-        <div class="card h-100">
-          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-            <strong><i class="fa-solid fa-triangle-exclamation text-danger"></i> Stocks à surveiller</strong>
-            <a href="/produits" class="btn btn-sm btn-outline-primary rounded-pill">Produits</a>
+      <!-- Monetary cards (grid) -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-blue-1"><i class="fa-solid fa-wallet"></i></div>
+              <p class="card-label">Encaisse</p>
+              <p class="card-value"><%= (soldeCaisse || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) %> XOF</p>
+              <p class="card-hint text-success small">Entrée</p>
+            </div>
           </div>
-          <ul class="list-group list-group-flush">
-            <% if (top5Alertes.length === 0) { %>
-              <li class="list-group-item text-center text-muted py-4">
-                <i class="fa-solid fa-circle-check text-success"></i> Aucun stock en alerte
-              </li>
-            <% } %>
-            <% top5Alertes.forEach(p => { %>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <div class="fw-semibold"><%= p.nom %></div>
-                <div class="small text-muted">Réf. <%= p.reference %> · seuil <%= p.seuil_alerte %></div>
-              </div>
-              <span class="badge badge-alerte">Stock : <%= p.stock_actuel %></span>
-            </li>
-            <% }) %>
-          </ul>
+        </div>
+
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-red-1"><i class="fa-solid fa-credit-card"></i></div>
+              <p class="card-label">Règlements</p>
+              <p class="card-value">0 XOF</p>
+              <p class="card-hint text-success small">Entrée</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-purple-1"><i class="fa-solid fa-box-open"></i></div>
+              <p class="card-label">Reliquats</p>
+              <p class="card-value">0 XOF</p>
+              <p class="card-hint text-danger small">Sortie</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-orange-1"><i class="fa-solid fa-camera-retro"></i></div>
+              <p class="card-label">Dépenses</p>
+              <p class="card-value">0 XOF</p>
+              <p class="card-hint text-danger small">Sortie</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-teal-1"><i class="fa-solid fa-basket-shopping"></i></div>
+              <p class="card-label">Ventes</p>
+              <p class="card-value"><%= ventesDuJour || 0 %> XOF</p>
+              <p class="card-hint text-muted small">Valeur théorique</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-green-1"><i class="fa-solid fa-arrow-down"></i></div>
+              <p class="card-label">Réapprovisionnements</p>
+              <p class="card-value">0 XOF</p>
+              <p class="card-hint text-danger small">Sortie</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-sm-4 col-md-3">
+          <div class="card card-dark money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-brown-1"><i class="fa-solid fa-tag"></i></div>
+              <p class="card-label">Remise</p>
+              <p class="card-value">0 XOF</p>
+              <p class="card-hint text-muted small">Pertes probables</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-8 col-md-3">
+          <div class="card card-highlight money-card h-100">
+            <div class="card-body">
+              <div class="card-icon bg-highlight"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
+              <p class="card-label">Bénéfices</p>
+              <p class="card-value">0 XOF</p>
+              <p class="card-hint text-primary small">Résultat</p>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Small summary row -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="card card-dark h-100">
+            <div class="card-body">
+              <p class="small text-muted">Produits</p>
+              <p class="h4 mb-0"><%= totalProduits || 0 %></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-dark h-100">
+            <div class="card-body">
+              <p class="small text-muted">Ventes</p>
+              <p class="h4 mb-0"><%= ventesDuJour || 0 %></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-dark h-100">
+            <div class="card-body">
+              <p class="small text-muted">Clients</p>
+              <p class="h4 mb-0">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-dark h-100">
+            <div class="card-body">
+              <p class="small text-muted">Fournisseurs</p>
+              <p class="h4 mb-0">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evolutions graph -->
+      <div class="card card-dark">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+          <strong><i class="fa-solid fa-chart-line text-white"></i> Evolutions des ventes et réapprovisionnement</strong>
+        </div>
+        <div class="card-body" style="min-height:240px">
+          <!-- Placeholder for chart; routes/rapports provides graph data later -->
+          <div class="chart-placeholder text-muted">(Graphique ici)</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
