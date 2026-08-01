@@ -103,12 +103,12 @@
   transform: translateX(0);
 }
 
-/* Shift page content by toggling a class on body */
-body {
+/* Shift page content by toggling a class on body (only when with-sidebar present) */
+body.with-sidebar {
   transition: padding-left var(--transition);
   padding-left: var(--sidebar-collapsed);
 }
-body.sidebar-open {
+body.with-sidebar.sidebar-open {
   padding-left: var(--sidebar-expanded);
 }
 
