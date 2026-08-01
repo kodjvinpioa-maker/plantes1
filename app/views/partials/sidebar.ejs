@@ -1,0 +1,24 @@
+<!-- views/partials/sidebar.ejs -->
+<aside id="app-sidebar" class="sidebar" aria-hidden="false" aria-expanded="false">
+  <button id="sidebar-toggle" class="sidebar__toggle" aria-label="Ouvrir le menu" aria-expanded="false">
+    <span class="hamburger"></span>
+  </button>
+
+  <nav class="sidebar__nav" role="navigation" aria-label="Navigation principale">
+    <ul class="sidebar__list">
+      <li class="sidebar__item"><a href="/dashboard" class="sidebar__link">🏠 <span class="sidebar__label">Accueil</span></a></li>
+      <li class="sidebar__item"><a href="/produits" class="sidebar__link">📦 <span class="sidebar__label">Produits</span></a></li>
+      <li class="sidebar__item"><a href="/stock" class="sidebar__link">📊 <span class="sidebar__label">Stock</span></a></li>
+      <li class="sidebar__item"><a href="/ventes/nouvelle" class="sidebar__link">💵 <span class="sidebar__label">Ventes</span></a></li>
+      <li class="sidebar__item"><a href="/approvisionnements" class="sidebar__link">🚚 <span class="sidebar__label">Approvisionnements</span></a></li>
+      <li class="sidebar__item"><a href="/fournisseurs" class="sidebar__link">🏷️ <span class="sidebar__label">Fournisseurs</span></a></li>
+      <li class="sidebar__item"><a href="/clients" class="sidebar__link">👥 <span class="sidebar__label">Clients</span></a></li>
+      <li class="sidebar__item"><a href="/caisse" class="sidebar__link">💰 <span class="sidebar__label">Caisse</span></a></li>
+      <li class="sidebar__item"><a href="/journal" class="sidebar__link">📝 <span class="sidebar__label">Journal</span></a></li>
+      <li class="sidebar__item"><a href="/corbeille" class="sidebar__link">🗑️ <span class="sidebar__label">Corbeille</span></a></li>
+      <% if (currentUser && currentUser.role === 'superadmin') { %>
+        <li class="sidebar__item"><a href="/superadmin" class="sidebar__link">⚙️ <span class="sidebar__label">Superadmin</span></a></li>
+      <% } %>
+    </ul>
+  </nav>
+</aside>
