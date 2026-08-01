@@ -10,22 +10,31 @@ if (DATABASE_URL) {
   const { Pool } = require('pg');
   const pool = new Pool({ connectionString: DATABASE_URL, ssl: (process.env.DB_SSL === 'true') ? { rejectUnauthorized: false } : false });
 
+  // Convert SQL with '?' placeholders to Postgres $1, $2, ... placeholders
+  function toPg(sql) {
+    let i = 0;
+    return sql.replace(/\?/g, () => `$${++i}`);
+  }
+
   function all(sql, params = [], cb) {
-    pool.query(sql, params)
+    const q = toPg(sql);
+    pool.query(q, params)
       .then(result => cb(null, result.rows))
       .catch(err => cb(err));
   }
 
   function get(sql, params = [], cb) {
-    pool.query(sql, params)
+    const q = toPg(sql);
+    pool.query(q, params)
       .then(result => cb(null, result.rows[0] || null))
       .catch(err => cb(err));
   }
 
   function run(sql, params = [], cb) {
-    pool.query(sql, params)
+    const q = toPg(sql);
+    pool.query(q, params)
       .then(result => {
-        // return an object similar to sqlite's callback: { lastID, changes }
+        // emulate sqlite run() callback with lastID when RETURNING id is used
         const lastID = (result.rows && result.rows[0] && (result.rows[0].id || result.rows[0].lastid)) ? (result.rows[0].id || result.rows[0].lastid) : null;
         cb && cb(null, { lastID, rowCount: result.rowCount, rows: result.rows });
       })
@@ -33,7 +42,8 @@ if (DATABASE_URL) {
   }
 
   function exec(sql, cb) {
-    pool.query(sql)
+    const q = toPg(sql);
+    pool.query(q)
       .then(() => cb && cb(null))
       .catch(err => cb && cb(err));
   }
