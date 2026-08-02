@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <%- include('partials/head', { title: typeof title !== 'undefined' ? title : 'Gestion Stock & Caisse' }) %>
+</head>
+<body class="<%= currentUser ? 'with-sidebar' : '' %>">
+  <%- include('partials/sidebar') %>
+  <main class="app-main">
+    <%- include('partials/navbar') %>
+    <div class="container-fluid py-4 px-3 px-md-4">
+      <%- body %>
+    </div>
+  </main>
+  <%- include('partials/toast') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
